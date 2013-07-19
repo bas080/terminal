@@ -80,10 +80,11 @@ function terminal_command(command, sender, pos)
     local channel = string.sub(command,11)
     meta:set_string("channel", string.sub(command,11))
     print(meta:get_string("channel"))
-    return "> "..command.."\n channel has been renamed"
+    return "> "..command.."\n Terminal channel has been renamed to "..channel
   end
-  local state = os.execute(command.." | tee -i > output")
+  local state = os.execute(command.." > output")
   local f = io.open("output", "r")
+  os.execute("rm output")
   if f then
     local contents = f:read("*all")
     if (contents == nil or contents == "" or contents == "\n") then
