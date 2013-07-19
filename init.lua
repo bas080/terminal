@@ -75,9 +75,12 @@ function terminal_command(command, sender, pos)
   if (command == "exit" or command == "logout") then
     return "exit"
   end
-  if (string.find(command, "digilines") ~= nil) then
-    print("BAMAMAMAMAMAMA")
-    return "hahaha"
+  if (string.sub(command, 1,9) == "digilines") then
+    local meta = minetest.env:get_meta(pos)
+    local channel = string.sub(command,11)
+    meta:set_string("channel", string.sub(command,11))
+    print(meta:get_string("channel"))
+    return "> "..command.."\n channel has been renamed"
   end
   local state = os.execute(command.." | tee -i > output")
   local f = io.open("output", "r")
