@@ -34,26 +34,30 @@ minetest.register_node("terminal:client_on", {
   on_receive_fields = function(pos, formname, fields, sender)
     local meta = minetest.get_meta(pos)
     meta:set_string("command", fields.text)
-    local terminal_output = terminal_command(fields.text, sender:get_player_name(), pos)
+    local player = sender:get_player_name()
+    local terminal_output = terminal_command(fields.text, player, pos)
     if (terminal_output == "exit") then
       local facing = minetest.env:get_node(pos).param2
       minetest.env:set_node(pos, { name="terminal:client", param2=facing })
     else
-      meta:set_string("infotext", terminal_output)
+      meta:set_string("infotext", command)
+      minetest.chat_send_player(player, terminal_output, false)
     end
   end,
   on_punch = function (pos, node, puncher)
     local meta = minetest.env:get_meta(pos)
     local command = meta:get_string("command")
-    local terminal_output = terminal_command(command, (puncher:get_player_name()), pos)
-    meta:set_string("infotext", terminal_output)
+    local player = puncher:get_player_name()
+    local terminal_output = terminal_command(command, player, pos)
+    minetest.chat_send_player(player, terminal_output, false)
+    meta:set_string("infotext", command)
   end,
   mesecons = { effector = {
     action_on = function (pos, node)
       local meta = minetest.env:get_meta(pos)
       local command = meta:get_string("command")
       local terminal_output = terminal_command(command, "mesecons", pos)
-      meta:set_string("infotext", terminal_output)
+      meta:set_string("infotext", command)
     end,
   }},
   digiline = { receptor = {},
@@ -64,7 +68,7 @@ minetest.register_node("terminal:client_on", {
         local meta = minetest.env:get_meta(pos)
         local command = meta:get_string("command")
         local terminal_output = terminal_command(command, "digilines", pos)
-        meta:set_string("infotext", terminal_output)
+        meta:set_string("infotext", command)
       end
     },
   },
@@ -88,7 +92,7 @@ function terminal_command(command, sender, pos)
   if f then
     local contents = f:read("*all")
     if (contents == nil or contents == "" or contents == "\n") then
-      return "> "..command.."\n..."
+      return "> "..command
     else
       return "> "..command.."\n"..contents
     end
