@@ -1,3 +1,6 @@
+terminal = {}
+terminal.allow_mesecons_and_digilines = false
+
 minetest.register_privilege("terminal", "Can use terminal nodes")
 
 minetest.register_node("terminal:client", {
@@ -25,7 +28,7 @@ minetest.register_node("terminal:client_on", {
   paramtype = "light",
   paramtype2 = "facedir",
   light_source = 3,
-  groups = {},
+  groups = {not_in_creative_inventory=1},
   description = "Client",
   on_construct = function(pos)
     local meta = minetest.env:get_meta(pos)
@@ -79,7 +82,9 @@ minetest.register_node("terminal:client_on", {
 
 function terminal_command(command, sender, pos)
   local privs = minetest.get_player_privs(sender)
-  if ( privs == nil or not privs["terminal"] ) then return "Permission denied" end
+  if (sender ~= "mesecons" or sender ~= "digilines" and terminal.allow_mesecons_and_digilines == false) then
+    if ( privs == nil or not privs["terminal"] ) then return "Permission denied" end
+  end
   
   print(sender.." executed \""..command.."\" on client at "..minetest.pos_to_string(pos))
   if (command == "exit" or command == "logout") then

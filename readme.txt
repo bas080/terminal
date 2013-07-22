@@ -4,7 +4,7 @@ Run terminal commands on the hosts computer from miles away.
 
 version
 -------
-0.3
+0.3.1
 
 contributors
 ------------
@@ -25,6 +25,11 @@ changelog
 0.3.5
 -----
 - check if cd(change directory) is possible and remember that path
+
+0.3.1
+-----
+- make option to allow or disable mesecons or digiline function "terminal.allow_mesecons_and_digilines = true"
+- default for terminal.allow_mesecons_and_digilines = false
 
 0.3
 ---
