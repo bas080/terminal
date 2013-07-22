@@ -1,3 +1,5 @@
+minetest.register_privilege("terminal", "Can use terminal nodes")
+
 minetest.register_node("terminal:client", {
   drawtype = "nodebox",
   tiles = {"terminal_client_side.png", "terminal_client_side.png", "terminal_client_side.png", "terminal_client_side.png", "terminal_client_side.png", "terminal_client_off.png"},
@@ -33,7 +35,8 @@ minetest.register_node("terminal:client_on", {
   end,
   on_receive_fields = function(pos, formname, fields, sender)
     local meta = minetest.get_meta(pos)
-    meta:set_string("command", fields.text)
+    local command = fields.text
+    meta:set_string("command",  command)
     local player = sender:get_player_name()
     local terminal_output = terminal_command(fields.text, player, pos)
     if (terminal_output == "exit") then
@@ -75,6 +78,9 @@ minetest.register_node("terminal:client_on", {
 })
 
 function terminal_command(command, sender, pos)
+  local privs = minetest.get_player_privs(sender)
+  if ( privs == nil or not privs["terminal"] ) then return "Permission denied" end
+  
   print(sender.." executed \""..command.."\" on client at "..minetest.pos_to_string(pos))
   if (command == "exit" or command == "logout") then
     return "exit"

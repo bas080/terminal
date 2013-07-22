@@ -4,7 +4,7 @@ Run terminal commands on the hosts computer from miles away.
 
 version
 -------
-0.2
+0.3
 
 contributors
 ------------
@@ -17,12 +17,18 @@ http://forum.minetest.net/viewtopic.php?pid=100710
 
 changelog
 ---------
-0.3
+1.0
 ---
 - uses digilines msg parameter
 - a craft
-- using terminals requires a (keyboard) which can only be obtained threw giveme
+
+0.3.5
+-----
 - check if cd(change directory) is possible and remember that path
+
+0.3
+---
+- "terminal" privs
 
 0.2.5
 -----
