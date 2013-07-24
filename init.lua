@@ -33,7 +33,8 @@ minetest.register_node("terminal:client_on", {
   on_construct = function(pos)
     local meta = minetest.env:get_meta(pos)
     meta:set_string("formspec", "field[text;;${command}]")
-    meta:set_string("channel", "terminal")
+    meta:set_string("channel-in", "keyboard")
+    meta:set_string("channel-out", "terminal")
     meta:set_string("command", "")
   end,
   on_receive_fields = function(pos, formname, fields, sender)
@@ -56,25 +57,22 @@ minetest.register_node("terminal:client_on", {
     local player = puncher:get_player_name()
     local terminal_output = terminal_command(command, player, pos)
     minetest.chat_send_player(player, terminal_output, false)
-    meta:set_string("infotext", command)
   end,
   mesecons = { effector = {
     action_on = function (pos, node)
       local meta = minetest.env:get_meta(pos)
       local command = meta:get_string("command")
-      local terminal_output = terminal_command(command, "mesecons", pos)
-      meta:set_string("infotext", command)
+      terminal_command(command, "mesecons", pos)
     end,
   }},
   digiline = { receptor = {},
     effector = {
       action = function(pos, node, channel, msg)
-        local setchan = minetest.env:get_meta(pos):get_string("channel")
-        if setchan ~= channel then return end
         local meta = minetest.env:get_meta(pos)
+        local setchan = meta:get_string("channel-in")
+        if setchan ~= channel then return end
         local command = meta:get_string("command")
-        local terminal_output = terminal_command(command, "digilines", pos)
-        meta:set_string("infotext", command)
+        terminal_command(msg, "digilines", pos)
       end
     },
   },
@@ -82,26 +80,37 @@ minetest.register_node("terminal:client_on", {
 
 function terminal_command(command, sender, pos)
   local privs = minetest.get_player_privs(sender)
-  if (sender ~= "mesecons" or sender ~= "digilines" and terminal.allow_mesecons_and_digilines == false) then
+  if (sender == "mesecons" or sender == "digilines") then
+    if (terminal.allow_mesecons_and_digilines == false) then return "Digiline and mesecon triggering disabled" end
+  else
     if ( privs == nil or not privs["terminal"] ) then return "Permission denied" end
   end
-  
   print(sender.." executed \""..command.."\" on client at "..minetest.pos_to_string(pos))
   if (command == "exit" or command == "logout") then
     return "exit"
   end
-  if (string.sub(command, 1,9) == "digilines") then
+  if (string.sub(command, 1,13) == "digilines -in") then
     local meta = minetest.env:get_meta(pos)
-    local channel = string.sub(command,11)
-    meta:set_string("channel", string.sub(command,11))
-    print(meta:get_string("channel"))
-    return "> "..command.."\n Terminal channel has been renamed to "..channel
+    local channel = string.sub(command,15)
+    meta:set_string("channel-in", channel)
+    return "> "..command.."\n Terminal channel input has been renamed to "..channel
+  end
+  if (string.sub(command, 1,14) == "digilines -out") then
+    local meta = minetest.env:get_meta(pos)
+    local channel = string.sub(command,16)
+    meta:set_string("channel-out", channel)
+    return "> "..command.."\n Terminal channel out has been renamed to "..channel
   end
   local state = os.execute(command.." > output")
   local f = io.open("output", "r")
   os.execute("rm output")
   if f then
     local contents = f:read("*all")
+    print(contents)
+    f:close()
+    local meta = minetest.env:get_meta(pos)
+    local channel = meta:get_string("channel-out")
+    digiline:receptor_send(pos, digiline.rules.default, channel, contents)
     if (contents == nil or contents == "" or contents == "\n") then
       return "> "..command
     else
