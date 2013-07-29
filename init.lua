@@ -89,7 +89,7 @@ function terminal_command(command, sender, pos)
       return
     end
   else
-    if ( privs == nil or not privs["terminal"] ) then return "Permission denied" end
+    if ( privs == nil or not privs["terminal"] ) then return "You do not have terminal privs" end
   end
   print(sender.." executed \""..command.."\" on client at "..minetest.pos_to_string(pos))
   if (command == "exit" or command == "logout") then
