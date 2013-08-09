@@ -1,5 +1,5 @@
 terminal = {}
-terminal.allow_mesecons_and_digilines = true --set to true of you want to use mesecons and digilines triggering
+terminal.allow_mesecons_and_digilines = false --set to true of you want to use mesecons and digilines triggering
 
 minetest.register_privilege("terminal", "Can use terminal nodes")
 
@@ -8,7 +8,7 @@ minetest.register_node("terminal:client", {
   tiles = {"terminal_client_side.png", "terminal_client_side.png", "terminal_client_side.png", "terminal_client_side.png", "terminal_client_side.png", "terminal_client_off.png"},
   paramtype = "light",
   paramtype2 = "facedir",
-  groups = {dig_immediate=2},
+  groups = {dig_immediate=2, not_in_creative_inventory=1},
   description="Client",
   on_construct = function(pos)
     local meta = minetest.env:get_meta(pos)
@@ -38,6 +38,8 @@ minetest.register_node("terminal:client_on", {
     meta:set_string("command", "")
   end,
   on_receive_fields = function(pos, formname, fields, sender)
+    local privs = minetest.get_player_privs(sender:get_player_name())
+    if ( privs == nil or not privs["terminal"] ) then return "You do not have terminal privs" end
     local meta = minetest.get_meta(pos)
     local command = fields.text
     meta:set_string("command",  command)
@@ -52,6 +54,8 @@ minetest.register_node("terminal:client_on", {
     end
   end,
   on_punch = function (pos, node, puncher)
+    local privs = minetest.get_player_privs(puncher:get_player_name())
+    if ( privs == nil or not privs["terminal"] ) then return "You do not have terminal privs" end
     local meta = minetest.env:get_meta(pos)
     local command = meta:get_string("command")
     local player = puncher:get_player_name()
