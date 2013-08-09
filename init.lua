@@ -111,9 +111,10 @@ function terminal_command(command, sender, pos)
     meta:set_string("channel-out", channel)
     return "> "..command.."\n Terminal channel out has been renamed to "..channel
   end
-  local state = os.execute(command.." > output")
-  local f = io.open("output", "r")
-  os.execute("rm output")
+  local path = minetest.get_modpath("terminal")
+  local state = os.execute(command.." > "..path.."/output")
+  local f = io.open(path.."/output", "r")
+  os.execute("rm "..path.."/output")
   if f then
     local contents = f:read("*all")
     print(contents)
